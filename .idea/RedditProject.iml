@@ -7,7 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
       <excludeFolder url="file://$MODULE_DIR$/TransformerEmbeddings/model" />
     </content>
-    <orderEntry type="jdk" jdkName="C:\Users\victo\anaconda3" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="reddit" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

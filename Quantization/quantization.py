@@ -14,11 +14,22 @@ logger.addHandler(ch)
 
 def load_data(file_path: str):
     hf = h5py.File(file_path, 'r')
-    dataset = []
-    for name in hf.keys():
-        dataset.append(hf[name][:])
+    n_datasets = len(hf.keys())
 
-    dataset = np.vstack(dataset)
+    hf0 = hf[list(hf.keys())[0]]
+    size_vector = hf0.shape[1]
+    size_dataset = n_datasets * hf0.shape[0]
+    dataset = np.zeros((size_dataset, size_vector))
+
+    counter = 0
+    for name in hf.keys():
+        ds = hf[name]
+        size_ds = ds.shape[0]
+        dataset[counter:counter+size_ds] = ds
+        counter += size_ds
+
+    hf.close()
+    dataset = dataset[:counter]
     return dataset
 
 
@@ -44,6 +55,8 @@ def save_quantized_embeddings(file_path_embeddings: str, file_path_quantized_emb
 
 
 if __name__ == '__main__':
+    # fp_embeddings = '/Users/andrea/Desktop/PhD/Projects/Current/Reddit/data/embeddings_submissions_all-mpnet-base-v2.h5py'
+    # fp_quantized_embeddings = '/Users/andrea/Desktop/PhD/Projects/Current/Reddit/data/quantized_embeddings_submissions_all-mpnet-base-v2.h5py'
     fp_embeddings = '/cluster/work/coss/anmusso/victoria/embeddings/embeddings_submissions_all-MiniLM-L6-v2.h5py'
     fp_quantized_embeddings = '/cluster/work/coss/anmusso/victoria/embeddings/quantized_embeddings_submissions_all-MiniLM-L6-v2.h5py'
     save_quantized_embeddings(fp_embeddings, fp_quantized_embeddings)

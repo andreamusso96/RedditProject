@@ -1,30 +1,52 @@
 from sentence_transformers.quantization import quantize_embeddings
 import numpy as np
 import time
+import h5py
+import logging
+
+logger = logging.getLogger('quantization')
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch = logging.StreamHandler()
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 
-def quantization():
-    vals = [4_000_000]
-    times = []
-    for i in range(len(vals)):
-        embeddings = np.random.uniform(-1, 1, size=(vals[i], 312))
-        t1 = time.time()
-        binary_embeddings = quantize_embeddings(embeddings, precision="int8")
-        t2 = time.time()
-        print(f"Quantization time: {t2 - t1}")
-        times.append(t2 - t1)
+def load_data(file_path: str):
+    hf = h5py.File(file_path, 'r')
+    dataset = []
+    for name in hf.keys():
+        dataset.append(hf[name][:])
 
-    return vals, times
+    dataset = np.vstack(dataset)
+    return dataset
+
+
+def quantization(data: np.ndarray):
+    quantized_embeddings = quantize_embeddings(data, precision="int8")
+    return quantized_embeddings
+
+
+def save_quantized_embeddings(file_path_embeddings: str, file_path_quantized_embeddings: str):
+    logger.info(f'Loading embeddings from {file_path_embeddings}')
+    data = load_data(file_path_embeddings)
+
+    logger.info('Quantizing embeddings')
+    quantized_embeddings = quantization(data)
+
+    logger.info('Saving quantized embeddings')
+    batch_size = 10000
+    with h5py.File(file_path_quantized_embeddings, 'w') as hf:
+        for i in range(0, len(quantized_embeddings), batch_size):
+            hf.create_dataset(f'{i}', data=quantized_embeddings[i:i+batch_size])
+
+    logger.info('Done saving quantized embeddings')
 
 
 if __name__ == '__main__':
-    import pandas as pd
-    v, t = quantization()
-    df = pd.DataFrame({'vals': v, 'times': t})
-    df.to_csv('quantization.csv')
+    fp_embeddings = '/cluster/work/coss/anmusso/victoria/embeddings/embeddings_submissions_all-MiniLM-L6-v2.h5py'
+    fp_quantized_embeddings = '/cluster/work/coss/anmusso/victoria/embeddings/quantized_embeddings_submissions_all-MiniLM-L6-v2.h5py'
+    save_quantized_embeddings(fp_embeddings, fp_quantized_embeddings)
 
-    df = pd.read_csv('quantization.csv')
-    import plotly.graph_objects as go
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=df['vals'], y=df['times'], mode='lines+markers'))
-    fig.show()
+
+

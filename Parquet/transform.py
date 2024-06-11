@@ -16,7 +16,7 @@ logger.addHandler(ch)
 
 
 def zst_to_parquet(zst_file_path: str, parquet_folder_path: str, parquet_file_name: str):
-
+    logger.info(f'Converting {zst_file_path} to parquet files in {parquet_folder_path}')
     file_size = os.stat(zst_file_path).st_size
 
     bad_line_count = 0

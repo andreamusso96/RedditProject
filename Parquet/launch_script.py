@@ -16,7 +16,7 @@ def launch_jobs():
     zst_folder_path = '/cluster/work/coss/anmusso/reddit/submissions'
     parquet_folder_path = '/cluster/work/coss/anmusso/reddit_parquet/submissions'
     file_names = extract_zst_file_names(folder_path=zst_folder_path)
-    file_names = sorted(file_names)[:1]
+    file_names = sorted(file_names)[-1:]
     print(file_names)
 
     os.system('chmod +x run_script.sh')

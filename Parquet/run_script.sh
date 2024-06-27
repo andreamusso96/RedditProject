@@ -2,7 +2,7 @@
 
 #SBATCH --nodes=1
 #SBATCH --mem-per-cpu=5GB
-#SBATCH --time=00:30:00
+#SBATCH --time=00:50:00
 
 module load gcc/8.2.0 python/3.11.2
 

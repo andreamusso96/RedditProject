@@ -21,10 +21,10 @@ def zst_to_parquet(zst_file_path: str, parquet_folder_path: str, parquet_file_na
     # Figure out how many parquet files to create
     file_size_zst_bytes = os.stat(zst_file_path).st_size
 
-    line_bytes_zst = 250
+    line_bytes_zst = 245
     n_lines_zst_file = file_size_zst_bytes // line_bytes_zst
 
-    line_bytes_parquet = 170
+    line_bytes_parquet = 165
     n_lines_parquet_file = 250 * 10**6 // line_bytes_parquet
 
     n_parquet_files = n_lines_zst_file // n_lines_parquet_file

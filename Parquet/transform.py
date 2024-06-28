@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import json
 import logging
@@ -17,19 +17,13 @@ logger.addHandler(ch)
 
 def zst_to_parquet(zst_file_path: str, parquet_folder_path: str, parquet_file_name: str):
     logger.info(f'Converting {zst_file_path} to parquet files in {parquet_folder_path}')
-
-    # Figure out how many parquet files to create
     file_size_zst_bytes = os.stat(zst_file_path).st_size
 
-    line_bytes_zst = 245
-    n_lines_zst_file = file_size_zst_bytes // line_bytes_zst
-
-    line_bytes_parquet = 165
-    n_lines_parquet_file = 250 * 10**6 // line_bytes_parquet
-
-    n_parquet_files = n_lines_zst_file // n_lines_parquet_file
-
-    logger.info(f'Number of parquet files to create: {n_parquet_files}')
+    # Figure out how many parquet files to create
+    logger.info(f'Computing zst file lines')
+    n_lines_zst_file = _count_lines_zst(file_path=zst_file_path)
+    n_lines_parquet_file, n_parquet_files = _get_n_files_and_n_lines_parquet(lines_zst=n_lines_zst_file)
+    logger.info(f'Number of parquet files to create: {n_parquet_files}, { n_lines_parquet_file} lines per file')
 
     bad_line_count = 0
     file_lines = 0
@@ -61,6 +55,22 @@ def zst_to_parquet(zst_file_path: str, parquet_folder_path: str, parquet_file_na
     logger.info(f'SAVING FILE: {parquet_file_id}')
     _save_to_parquet_file(lines=lines, parquet_file_path=f'{parquet_folder_path}/{parquet_file_name}_{parquet_file_id}.parquet.snappy')
     logger.info(f'Finished converting {zst_file_path} to parquet files in {parquet_folder_path}')
+
+
+def _count_lines_zst(file_path: str) -> int:
+    file_lines = 0
+    for _, _ in read_lines_zst(file_name=file_path):
+        file_lines += 1
+    return file_lines
+
+
+def _get_n_files_and_n_lines_parquet(lines_zst: int) -> Tuple[int, int]:
+    bytes_per_line_parquet = 170
+    desired_lines_parquet = (240 * 10**6) // bytes_per_line_parquet
+    n_files = lines_zst // desired_lines_parquet
+    remainder = lines_zst % desired_lines_parquet
+    n_lines_parquet = desired_lines_parquet + remainder // n_files
+    return n_lines_parquet, n_files
 
 
 def _extract_line_data(line_str: str) -> Dict[str, Any]:

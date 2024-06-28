@@ -1,4 +1,3 @@
-import os
 import sys
 from transform import zst_to_parquet
 

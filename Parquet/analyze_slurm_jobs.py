@@ -19,3 +19,8 @@ def analyze_slurm_jobs_reports(path: str = '/Users/andrea/Desktop/Temp/slurm_job
             bad_files.append(file)
 
     print(sorted(bad_files))
+    print(sorted([b.split('.')[0] for b in bad_files]))
+
+
+if __name__ == '__main__':
+    analyze_slurm_jobs_reports()
